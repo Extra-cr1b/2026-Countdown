@@ -3,29 +3,76 @@
 <head>
 <meta charset="UTF-8">
 <title>Countdown to 2026</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
+
 <style>
-html,body{margin:0;padding:0;height:100%;background:black;overflow:hidden;color:white;}
-canvas{position:fixed;inset:0;z-index:0;}
-#title{position:absolute;top:20px;width:100%;text-align:center;font-family:Montserrat,sans-serif;font-size:56px;font-weight:900;color:red;text-shadow:0 0 20px red,0 0 70px crimson;z-index:3;}
-#clock{position:absolute;bottom:140px;width:100%;display:flex;justify-content:center;gap:20px;z-index:3;}
-.unit{text-align:center;font-family:"Comic Sans MS",cursive;}
-.flip{background:#111;border-radius:14px;padding:15px 22px;font-size:34px;min-width:90px;box-shadow:0 0 18px rgba(255,0,0,.8);}
-.label{font-size:14px;opacity:.8;}
-#cookieArea{position:absolute;top:130px;width:100%;display:flex;flex-direction:column;align-items:center;z-index:4;}
-#cookie{width:170px;height:170px;border-radius:50%;cursor:pointer;box-shadow:0 0 25px rgba(255,255,255,.4);}
-#cookie:active{transform:scale(.92);}
-#cookieCount{margin-top:6px;font-family:"Comic Sans MS",cursive;}
-#skinPicker{margin-top:6px;}
-#music{position:absolute;bottom:20px;width:100%;text-align:center;z-index:5;font-family:"Comic Sans MS",cursive;}
-button{margin:3px;padding:6px 10px;}
-input[type=range]{width:140px;}
-#meter{display:flex;justify-content:center;gap:3px;margin-top:6px;}
-.bar{width:6px;height:20px;background:#333;}
-.bar.active{background:lime;}
-#final{position:fixed;inset:0;display:none;align-items:center;justify-content:center;font-family:Montserrat,sans-serif;font-size:200px;font-weight:900;z-index:6;}
+html,body{
+  margin:0;padding:0;height:100%;
+  background:black;overflow:hidden;color:white;
+}
+canvas{position:fixed;inset:0;z-index:0}
+
+/* TITLE */
+#title{
+  position:absolute;top:20px;width:100%;
+  text-align:center;font-family:Montserrat,sans-serif;
+  font-size:56px;font-weight:900;color:red;
+  text-shadow:0 0 20px red,0 0 70px crimson;
+  z-index:2;
+}
+
+/* CLOCK */
+#clock{
+  position:absolute;bottom:140px;width:100%;
+  display:flex;justify-content:center;gap:20px;z-index:2;
+}
+.unit{text-align:center;font-family:"Comic Sans MS",cursive}
+.flip{
+  background:#111;border-radius:14px;
+  padding:15px 22px;font-size:34px;min-width:90px;
+  box-shadow:0 0 18px rgba(255,0,0,.8);
+}
+.label{font-size:14px;opacity:.8}
+
+/* COOKIE */
+#cookieArea{
+  position:absolute;top:130px;width:100%;
+  display:flex;flex-direction:column;align-items:center;z-index:3;
+}
+#cookie{
+  width:170px;height:170px;border-radius:50%;
+  cursor:pointer;position:relative;
+  box-shadow:0 0 25px rgba(255,255,255,.4);
+}
+#cookie:active{transform:scale(.92)}
+.crack{
+  position:absolute;width:3px;height:60px;
+  background:rgba(0,0,0,.6);
+  top:50%;left:50%;transform-origin:top;
+}
+#cookieCount{margin-top:8px;font-family:"Comic Sans MS",cursive}
+#skinPicker{margin-top:6px}
+
+/* MUSIC */
+#music{
+  position:absolute;bottom:20px;width:100%;
+  text-align:center;z-index:4;
+  font-family:"Comic Sans MS",cursive;
+}
+button{margin:3px;padding:6px 10px}
+input[type=range]{width:160px}
+
+/* FINAL */
+#final{
+  position:fixed;inset:0;display:none;
+  align-items:center;justify-content:center;
+  font-family:Montserrat,sans-serif;
+  font-size:200px;font-weight:900;z-index:5;
+}
 </style>
 </head>
+
 <body>
 
 <canvas id="canvas"></canvas>
@@ -54,57 +101,61 @@ input[type=range]{width:140px;}
 
 <div id="music">
   <button onclick="prevSong()">⏮️</button>
-  <button onclick="toggleBass()">🎧 Bass Boost</button>
-  <button onclick="nextSong()">⏭️</button><br>
-  🎵 Music <input type="range" min="0" max="1" step="0.01" id="musicVol" value="0.6">
-  🎆 FX <input type="range" min="0" max="1" step="0.01" id="fxVol" value="0.7">
+  <button onclick="toggleMute()">🔇</button>
+  <button onclick="nextSong()">⏭️</button>
+  <br>
+  Volume:
+  <input type="range" min="0" max="100" value="60" id="volume">
   <div id="nowPlaying">Click anywhere to start music 🎶</div>
-  <div id="meter"></div>
 </div>
 
 <audio id="player"></audio>
-<audio id="launch" src="launch.mp3"></audio>
-<audio id="boom" src="boom.mp3"></audio>
 
 <script>
-// -------- MUSIC --------
-const playlist=[{f:"firework.mp3",n:"Firework"},{f:"beautiful_things.mp3",n:"Beautiful Things"},{f:"gods_got_my_back.mp3",n:"God's Got My Back"},{f:"blessings.mp3",n:"Blessings"}];
+/* MUSIC */
+const playlist=[
+ {f:"firework.mp3",n:"Firework"},
+ {f:"beautiful_things.mp3",n:"Beautiful Things"},
+ {f:"gods_got_my_back.mp3",n:"God's Got My Back"},
+ {f:"blessings.mp3",n:"Blessings"}
+];
+
 let song=0;
-const player=document.getElementById("player"),launch=document.getElementById("launch"),boom=document.getElementById("boom"),nowPlaying=document.getElementById("nowPlaying");
-let bassOn=false;
+const player=document.getElementById("player");
+const nowPlaying=document.getElementById("nowPlaying");
+const volume=document.getElementById("volume");
+let muted=false;
 
-const ctxA=new (window.AudioContext||window.webkitAudioContext)();
-const src=ctxA.createMediaElementSource(player);
-const analyser=ctxA.createAnalyser();
-const bass=ctxA.createBiquadFilter();
-bass.type="lowshelf";bass.frequency.value=200;bass.gain.value=0;
-src.connect(bass);bass.connect(analyser);analyser.connect(ctxA.destination);
+player.volume=0.6;
 
-const musicVol=document.getElementById("musicVol"),fxVol=document.getElementById("fxVol");
-musicVol.oninput=()=>player.volume=musicVol.value;fxVol.oninput=()=>{launch.volume=boom.volume=fxVol.value};
+function playSong(){
+ player.src=playlist[song].f;
+ player.play();
+ nowPlaying.textContent="Now Playing: "+playlist[song].n;
+}
 
-function playSong(){player.src=playlist[song].f;player.play();nowPlaying.textContent="Now Playing: "+playlist[song].n;}
 function nextSong(){song=(song+1)%playlist.length;playSong();}
 function prevSong(){song=(song-1+playlist.length)%playlist.length;playSong();}
 player.onended=nextSong;
-function toggleBass(){bassOn=!bassOn;bass.gain.value=bassOn?15:0;}
-document.body.addEventListener("click",()=>{ctxA.resume();playSong();},{once:true});
 
-// -------- VOLUME METER --------
-const meter=document.getElementById("meter");
-for(let i=0;i<20;i++){const b=document.createElement("div");b.className="bar";meter.appendChild(b);}
-function updateMeter(){
-  const data=new Uint8Array(analyser.frequencyBinCount);
-  analyser.getByteFrequencyData(data);
-  const avg=data.reduce((a,b)=>a+b)/data.length;
-  document.querySelectorAll(".bar").forEach((b,i)=>{b.classList.toggle("active",i*12<avg);});
-  requestAnimationFrame(updateMeter);
+volume.oninput=()=>{
+ player.volume=volume.value/100;
+ muted=false;
+};
+
+function toggleMute(){
+ muted=!muted;
+ player.muted=muted;
 }
-updateMeter();
 
-// -------- COUNTDOWN --------
+document.body.addEventListener("click",playSong,{once:true});
+
+/* COUNTDOWN */
 const T=new Date("January 1, 2026 00:00:00").getTime();
-const d=document.getElementById("d"),h=document.getElementById("h"),m=document.getElementById("m"),s=document.getElementById("s"),final=document.getElementById("final");
+const d=document.getElementById("d"),h=document.getElementById("h"),
+m=document.getElementById("m"),s=document.getElementById("s"),
+final=document.getElementById("final");
+
 setInterval(()=>{
  const diff=T-Date.now();
  if(diff<=0)return;
@@ -112,34 +163,84 @@ setInterval(()=>{
  h.textContent=Math.floor(diff/3600000)%24;
  m.textContent=Math.floor(diff/60000)%60;
  s.textContent=Math.floor(diff/1000)%60;
- if(diff<=10000){final.style.display="flex";final.textContent=Math.ceil(diff/1000);}
+ if(diff<=10000){
+  final.style.display="flex";
+  final.textContent=Math.ceil(diff/1000);
+ }
 },1000);
 
-// -------- CANVAS --------
-const canvas=document.getElementById("canvas");const ctx=canvas.getContext("2d");
+/* CANVAS */
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
 canvas.width=innerWidth;canvas.height=innerHeight;
-onresize=()=>{canvas.width=innerWidth;canvas.height=innerHeight;}
+onresize=()=>{canvas.width=innerWidth;canvas.height=innerHeight}
 
-// -------- PARTICLES --------
-class Spark{constructor(x,y,c){this.x=x;this.y=y;this.life=80;this.vx=(Math.random()-.5)*5;this.vy=(Math.random()-.5)*5;this.c=c||`hsl(${Math.random()*360},100%,60%)`;}
-update(){this.x+=this.vx;this.y+=this.vy;this.life--;ctx.fillStyle=this.c;ctx.fillRect(this.x,this.y,3,3);}}
-class Snow{constructor(){this.x=Math.random()*canvas.width;this.y=Math.random()*canvas.height;this.v=Math.random()+.4;}
-update(){this.y+=this.v;if(this.y>canvas.height)this.y=0;ctx.fillStyle="white";ctx.fillRect(this.x,this.y,2,2);}}
-let sparks=[],snow=[];for(let i=0;i<160;i++)snow.push(new Snow());
-function explode(x,y,n,c){boom.currentTime=0;boom.play();launch.currentTime=0;launch.play();for(let i=0;i<n;i++)sparks.push(new Spark(x,y,c));}
-function animate(){ctx.fillStyle="rgba(0,0,0,.25)";ctx.fillRect(0,0,canvas.width,canvas.height);snow.forEach(s=>s.update());sparks=sparks.filter(p=>{p.update();return p.life>0});requestAnimationFrame(animate);}
+/* PARTICLES */
+class Spark{
+ constructor(x,y,c){
+  this.x=x;this.y=y;this.life=80;
+  this.vx=(Math.random()-.5)*5;
+  this.vy=(Math.random()-.5)*5;
+  this.c=c||`hsl(${Math.random()*360},100%,60%)`;
+ }
+ update(){
+  this.x+=this.vx;this.y+=this.vy;this.life--;
+  ctx.fillStyle=this.c;ctx.fillRect(this.x,this.y,3,3);
+ }
+}
+class Snow{
+ constructor(){this.x=Math.random()*canvas.width;this.y=Math.random()*canvas.height;this.v=Math.random()+.4}
+ update(){this.y+=this.v;if(this.y>canvas.height)this.y=0;ctx.fillStyle="white";ctx.fillRect(this.x,this.y,2,2)}
+}
+
+let sparks=[],snow=[];
+for(let i=0;i<160;i++)snow.push(new Snow());
+
+function explode(x,y,n,c){
+ for(let i=0;i<n;i++)sparks.push(new Spark(x,y,c));
+}
+
+function animate(){
+ ctx.fillStyle="rgba(0,0,0,.25)";
+ ctx.fillRect(0,0,canvas.width,canvas.height);
+ snow.forEach(s=>s.update());
+ sparks=sparks.filter(p=>{p.update();return p.life>0});
+ requestAnimationFrame(animate);
+}
 animate();
 
-// -------- COOKIE --------
+/* COOKIE */
 let cookies=0;
 const cookie=document.getElementById("cookie");
-const cookieCount=document.getElementById("cookieCount");
 cookie.style.background="#c68642";
-cookie.onclick=e=>{e.stopPropagation();cookies++;cookieCount.textContent="Cookies: "+cookies;explode(canvas.width/2,canvas.height/2,60,cookie.style.background);}
+
+function crack(){
+ const c=document.createElement("div");
+ c.className="crack";
+ c.style.transform=`rotate(${Math.random()*360}deg)`;
+ cookie.appendChild(c);
+}
+
+cookie.onclick=e=>{
+ e.stopPropagation();
+ cookies++;
+ cookieCount.textContent="Cookies: "+cookies;
+ explode(canvas.width/2,canvas.height/2,40,cookie.style.background);
+ if(cookies%5===0&&cookie.children.length<15)crack();
+ if(cookies===50){
+  explode(canvas.width/2,canvas.height/2,300);
+  cookie.innerHTML="";
+  cookies=0;
+  cookieCount.textContent="Cookies: 0 (New Cookie!)";
+ }
+};
+
 skinPicker.onchange=e=>cookie.style.background=e.target.value;
 
-// -------- CLICK FIREWORKS --------
-document.body.addEventListener("click",e=>{explode(e.clientX,e.clientY,80);});
+/* CLICK FIREWORK */
+document.body.addEventListener("click",e=>{
+ explode(e.clientX,e.clientY,80);
+});
 </script>
 
 </body>
