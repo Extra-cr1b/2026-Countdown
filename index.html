@@ -107,7 +107,6 @@ input[type=range]{width:160px}
   Volume:
   <input type="range" min="0" max="100" value="60" id="volume">
   <div id="nowPlaying">Click anywhere to start music 🎶</div>
-  <button onclick="toggleFullscreen()">Fullscreen</button>
 </div>
 
 <audio id="player"></audio>
@@ -128,12 +127,6 @@ const playlist=[
  {f:"ImadeIt.mp3",n:"I made it through"},
  {f:"teeth" .n:"Teeth"}
 ];
-  /* FULLSCREEN */
-function toggleFullscreen(){
-  if(!document.fullscreenElement)
-    document.documentElement.requestFullscreen();
-  else document.exitFullscreen();
-}
 
 let song=0;
 const player=document.getElementById("player");
@@ -251,8 +244,7 @@ cookie.onclick=e=>{
 };
 
 skinPicker.onchange=e=>cookie.style.background=e.target.value;
- 
-  
+
 /* CLICK FIREWORK */
 document.body.addEventListener("click",e=>{
  explode(e.clientX,e.clientY,80);
@@ -261,12 +253,3 @@ document.body.addEventListener("click",e=>{
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
