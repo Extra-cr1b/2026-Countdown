@@ -19,13 +19,13 @@ canvas{position:fixed;inset:0;z-index:0}
   text-align:center;font-family:Montserrat,sans-serif;
   font-size:56px;font-weight:900;color:red;
   text-shadow:0 0 20px red,0 0 70px crimson;
-  z-index:2;
+  z-index:3;
 }
 
 /* CLOCK */
 #clock{
   position:absolute;bottom:140px;width:100%;
-  display:flex;justify-content:center;gap:20px;z-index:2;
+  display:flex;justify-content:center;gap:20px;z-index:3;
 }
 .unit{text-align:center;font-family:"Comic Sans MS",cursive}
 .flip{
@@ -37,38 +37,42 @@ canvas{position:fixed;inset:0;z-index:0}
 
 /* COOKIE */
 #cookieArea{
-  position:absolute;top:130px;width:100%;
-  display:flex;flex-direction:column;align-items:center;z-index:3;
+  position:absolute;top:140px;width:100%;
+  display:flex;flex-direction:column;align-items:center;z-index:4;
 }
 #cookie{
   width:170px;height:170px;border-radius:50%;
-  cursor:pointer;position:relative;
+  cursor:pointer;
   box-shadow:0 0 25px rgba(255,255,255,.4);
 }
 #cookie:active{transform:scale(.92)}
-.crack{
-  position:absolute;width:3px;height:60px;
-  background:rgba(0,0,0,.6);
-  top:50%;left:50%;transform-origin:top;
-}
-#cookieCount{margin-top:8px;font-family:"Comic Sans MS",cursive}
+#cookieCount{margin-top:6px;font-family:"Comic Sans MS",cursive}
 #skinPicker{margin-top:6px}
 
 /* MUSIC */
 #music{
   position:absolute;bottom:20px;width:100%;
-  text-align:center;z-index:4;
+  text-align:center;z-index:5;
   font-family:"Comic Sans MS",cursive;
 }
 button{margin:3px;padding:6px 10px}
-input[type=range]{width:160px}
+input[type=range]{width:140px}
+
+/* VOLUME METER */
+#meter{
+  display:flex;justify-content:center;gap:3px;margin-top:6px;
+}
+.bar{
+  width:6px;height:20px;background:#333;
+}
+.bar.active{background:lime}
 
 /* FINAL */
 #final{
   position:fixed;inset:0;display:none;
   align-items:center;justify-content:center;
   font-family:Montserrat,sans-serif;
-  font-size:200px;font-weight:900;z-index:5;
+  font-size:200px;font-weight:900;z-index:6;
 }
 </style>
 </head>
@@ -101,4 +105,167 @@ input[type=range]{width:160px}
 
 <div id="music">
   <button onclick="prevSong()">⏮️</button>
-  <button onclic
+  <button onclick="toggleBass()">🎧 Bass Boost</button>
+  <button onclick="nextSong()">⏭️</button><br>
+
+  🎵 Music
+  <input type="range" min="0" max="1" step="0.01" id="musicVol" value="0.6">
+  🎆 FX
+  <input type="range" min="0" max="1" step="0.01" id="fxVol" value="0.7">
+
+  <div id="nowPlaying">Click anywhere to start music 🎶</div>
+
+  <div id="meter"></div>
+</div>
+
+<audio id="player"></audio>
+<audio id="launch" src="launch.mp3"></audio>
+<audio id="boom" src="boom.mp3"></audio>
+
+<script>
+/* AUDIO SETUP */
+const playlist=[
+ {f:"firework.mp3",n:"Firework"},
+ {f:"beautiful_things.mp3",n:"Beautiful Things"},
+ {f:"gods_got_my_back.mp3",n:"God's Got My Back"},
+ {f:"blessings.mp3",n:"Blessings"}
+];
+
+let song=0;
+const player=document.getElementById("player");
+const launch=document.getElementById("launch");
+const boom=document.getElementById("boom");
+const nowPlaying=document.getElementById("nowPlaying");
+
+const ctxA=new AudioContext();
+const src=ctxA.createMediaElementSource(player);
+const analyser=ctxA.createAnalyser();
+const bass=ctxA.createBiquadFilter();
+
+bass.type="lowshelf";
+bass.frequency.value=200;
+bass.gain.value=0;
+
+src.connect(bass);
+bass.connect(analyser);
+analyser.connect(ctxA.destination);
+
+const musicVol=document.getElementById("musicVol");
+const fxVol=document.getElementById("fxVol");
+
+musicVol.oninput=()=>player.volume=musicVol.value;
+fxVol.oninput=()=>{launch.volume=boom.volume=fxVol.value};
+
+function playSong(){
+ player.src=playlist[song].f;
+ player.play();
+ nowPlaying.textContent="Now Playing: "+playlist[song].n;
+}
+
+function nextSong(){song=(song+1)%playlist.length;playSong()}
+function prevSong(){song=(song-1+playlist.length)%playlist.length;playSong()}
+player.onended=nextSong;
+
+let bassOn=false;
+function toggleBass(){
+ bassOn=!bassOn;
+ bass.gain.value=bassOn?15:0;
+}
+
+document.body.addEventListener("click",()=>{
+ ctxA.resume();
+ playSong();
+},{once:true});
+
+/* VOLUME METER */
+const meter=document.getElementById("meter");
+for(let i=0;i<20;i++){
+ const b=document.createElement("div");
+ b.className="bar";meter.appendChild(b);
+}
+
+function updateMeter(){
+ const data=new Uint8Array(analyser.frequencyBinCount);
+ analyser.getByteFrequencyData(data);
+ const avg=data.reduce((a,b)=>a+b)/data.length;
+ document.querySelectorAll(".bar").forEach((b,i)=>{
+  b.classList.toggle("active",i*12<avg);
+ });
+ requestAnimationFrame(updateMeter);
+}
+updateMeter();
+
+/* COUNTDOWN */
+const T=new Date("January 1, 2026 00:00:00").getTime();
+const d=dEl=d,hEl=h,mEl=m,sEl=s,final=document.getElementById("final");
+
+setInterval(()=>{
+ const diff=T-Date.now();
+ if(diff<=0)return;
+ d.textContent=Math.floor(diff/86400000);
+ h.textContent=Math.floor(diff/3600000)%24;
+ m.textContent=Math.floor(diff/60000)%60;
+ s.textContent=Math.floor(diff/1000)%60;
+ if(diff<=10000){
+  final.style.display="flex";
+  final.textContent=Math.ceil(diff/1000);
+ }
+},1000);
+
+/* CANVAS */
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+canvas.width=innerWidth;canvas.height=innerHeight;
+onresize=()=>{canvas.width=innerWidth;canvas.height=innerHeight}
+
+/* PARTICLES */
+class Spark{
+ constructor(x,y,c){
+  this.x=x;this.y=y;this.life=80;
+  this.vx=(Math.random()-.5)*5;
+  this.vy=(Math.random()-.5)*5;
+  this.c=c||`hsl(${Math.random()*360},100%,60%)`;
+ }
+ update(){
+  this.x+=this.vx;this.y+=this.vy;this.life--;
+  ctx.fillStyle=this.c;ctx.fillRect(this.x,this.y,3,3);
+ }
+}
+
+function explode(x,y,n,c){
+ boom.currentTime=0;boom.play();
+ for(let i=0;i<n;i++)sparks.push(new Spark(x,y,c));
+}
+
+let sparks=[];
+
+function animate(){
+ ctx.fillStyle="rgba(0,0,0,.25)";
+ ctx.fillRect(0,0,canvas.width,canvas.height);
+ sparks=sparks.filter(p=>{p.update();return p.life>0});
+ requestAnimationFrame(animate);
+}
+animate();
+
+/* COOKIE */
+let cookies=0;
+const cookie=document.getElementById("cookie");
+cookie.style.background="#c68642";
+
+cookie.onclick=e=>{
+ e.stopPropagation();
+ cookies++;
+ cookieCount.textContent="Cookies: "+cookies;
+ explode(canvas.width/2,canvas.height/2,60,cookie.style.background);
+};
+
+skinPicker.onchange=e=>cookie.style.background=e.target.value;
+
+/* CLICK FIREWORK */
+document.body.addEventListener("click",e=>{
+ explode(e.clientX,e.clientY,80);
+});
+</script>
+
+</body>
+</html>
