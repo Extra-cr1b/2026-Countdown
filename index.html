@@ -43,44 +43,35 @@ canvas{position:fixed;inset:0;z-index:0}
 /* COOKIE */
 #cookieArea{
   position:absolute;
-  top:70px;          /* 👈 moved higher */
+  top:120px;
   width:100%;
   display:flex;
   flex-direction:column;
   align-items:center;
   z-index:3;
 }
-
 #cookie{
-  width:170px;
-  height:170px;
+  width:170px;height:170px;
   border-radius:50%;
   cursor:pointer;
   position:relative;
-  transition:transform .08s;
   box-shadow:0 0 25px rgba(255,255,255,.4);
+  transition:transform .08s;
 }
 #cookie:active{transform:scale(.92)}
 
 .crack{
   position:absolute;
-  width:3px;
-  height:60px;
+  width:3px;height:60px;
   background:rgba(0,0,0,.6);
-  top:50%;
-  left:50%;
+  top:50%;left:50%;
   transform-origin:top;
 }
 
-#cookieCount{
-  margin-top:10px;
-  font-family:"Comic Sans MS",cursive;
-}
-
+#cookieCount{margin-top:10px;font-family:"Comic Sans MS",cursive}
 #skinPicker{
   margin-top:8px;
-  background:#111;
-  color:white;
+  background:#111;color:white;
   border:1px solid #444;
   border-radius:6px;
   padding:4px;
@@ -152,10 +143,27 @@ const ctx=canvas.getContext("2d");
 resize();window.onresize=resize;
 function resize(){canvas.width=innerWidth;canvas.height=innerHeight}
 
+/* PARTICLES */
+class Spark{
+ constructor(x,y,color=null){
+  this.x=x;this.y=y;
+  this.vx=(Math.random()-.5)*5;
+  this.vy=(Math.random()-.5)*5;
+  this.life=90;
+  this.c=color || `hsl(${Math.random()*360},100%,60%)`;
+ }
+ update(){
+  this.x+=this.vx;this.y+=this.vy;this.life--;
+  ctx.fillStyle=this.c;
+  ctx.fillRect(this.x,this.y,3,3);
+ }
+}
+
 /* FIREWORKS */
 class Rocket{
- constructor(x=Math.random()*canvas.width){
-  this.x=x;this.y=canvas.height;
+ constructor(x){
+  this.x=x;
+  this.y=canvas.height;
   this.vy=-(Math.random()*3+5);
   this.ty=Math.random()*canvas.height/2;
  }
@@ -166,22 +174,11 @@ class Rocket{
   ctx.moveTo(this.x,this.y);
   ctx.lineTo(this.x,this.y+15);
   ctx.stroke();
-  if(this.y<=this.ty){explode(this.x,this.y,50);return false}
+  if(this.y<=this.ty){
+    explode(this.x,this.y,60);
+    return false;
+  }
   return true;
- }
-}
-class Spark{
- constructor(x,y){
-  this.x=x;this.y=y;
-  this.vx=(Math.random()-.5)*4;
-  this.vy=(Math.random()-.5)*4;
-  this.life=90;
-  this.c=`hsl(${Math.random()*360},100%,60%)`;
- }
- update(){
-  this.x+=this.vx;this.y+=this.vy;this.life--;
-  ctx.fillStyle=this.c;
-  ctx.fillRect(this.x,this.y,3,3);
  }
 }
 
@@ -200,49 +197,51 @@ class Snow{
  }
 }
 
-let rockets=[],sparks=[],snow=[];
-for(let i=0;i<160;i++)snow.push(new Snow());
-setInterval(()=>rockets.push(new Rocket()),1600);
+let sparks=[],rockets=[],snow=[];
+for(let i=0;i<160;i++) snow.push(new Snow());
 
-function explode(x,y,c){
- for(let i=0;i<c;i++)sparks.push(new Spark(x,y));
+function explode(x,y,count,color=null){
+ for(let i=0;i<count;i++) sparks.push(new Spark(x,y,color));
 }
+
+setInterval(()=>rockets.push(new Rocket(Math.random()*canvas.width)),1600);
 
 function animate(){
  ctx.fillStyle="rgba(0,0,0,.25)";
  ctx.fillRect(0,0,canvas.width,canvas.height);
- snow.forEach(f=>f.update());
+ snow.forEach(s=>s.update());
  rockets=rockets.filter(r=>r.update());
  sparks=sparks.filter(p=>{p.update();return p.life>0});
  requestAnimationFrame(animate);
 }
 animate();
 
-/* COOKIE + BREAK */
+/* COOKIE LOGIC */
 let cookies=0;
 const cookie=document.getElementById("cookie");
 cookie.style.background="#c68642";
 
 function addCrack(){
- const crack=document.createElement("div");
- crack.className="crack";
- crack.style.transform=`rotate(${Math.random()*360}deg)`;
- cookie.appendChild(crack);
+ const c=document.createElement("div");
+ c.className="crack";
+ c.style.transform=`rotate(${Math.random()*360}deg)`;
+ cookie.appendChild(c);
 }
 
-cookie.onclick=()=>{
+cookie.onclick=e=>{
+ e.stopPropagation(); // 👈 prevents double fireworks
  cookies++;
  document.getElementById("cookieCount").textContent="Cookies: "+cookies;
- explode(canvas.width/2,canvas.height/2,80);
 
- if(cookies % 5 === 0 && cookie.children.length < 15){
-   addCrack();
- }
+ // crumbs (cookie-colored sparks)
+ explode(canvas.width/2, canvas.height/2, 30, cookie.style.background);
 
- if(cookies === 50){
-   explode(canvas.width/2, canvas.height/2, 250); // BIG BREAK
+ if(cookies%5===0 && cookie.children.length<15) addCrack();
+
+ if(cookies===50){
+   explode(canvas.width/2, canvas.height/2, 250);
    cookie.innerHTML="";
-   cookies = 0;
+   cookies=0;
    document.getElementById("cookieCount").textContent="Cookies: 0 (New Cookie!)";
  }
 };
@@ -250,8 +249,12 @@ cookie.onclick=()=>{
 document.getElementById("skinPicker").onchange=e=>{
  cookie.style.background=e.target.value;
 };
+
+/* CLICK ANYWHERE = FIREWORK */
+document.body.addEventListener("click",e=>{
+ explode(e.clientX,e.clientY,80);
+});
 </script>
 
 </body>
 </html>
-
