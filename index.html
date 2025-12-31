@@ -107,6 +107,7 @@ input[type=range]{width:160px}
   Volume:
   <input type="range" min="0" max="100" value="60" id="volume">
   <div id="nowPlaying">Click anywhere to start music 🎶</div>
+  <button onclick="toggleFullscreen()">Fullscreen</button>
 </div>
 
 <audio id="player"></audio>
@@ -117,8 +118,17 @@ const playlist=[
  {f:"firework.mp3",n:"Firework"},
  {f:"beautiful_things.mp3",n:"Royalty"},
  {f:"gods_got_my_back.mp3",n:"God's Got My Back"},
- {f:"blessings.mp3",n:"Blessings"}
+ {f:"blessings.mp3",n:"Blessings"},
+ {f:"song5.mp3" ,n:"Yeshua Holy Drill"},
+ {f:"song6.mp3" ,n:"Big guy"},
+ {f:"song7.mp3" ,n:"Golden"} 
 ];
+  /* FULLSCREEN */
+function toggleFullscreen(){
+  if(!document.fullscreenElement)
+    document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+}
 
 let song=0;
 const player=document.getElementById("player");
@@ -245,5 +255,6 @@ document.body.addEventListener("click",e=>{
 
 </body>
 </html>
+
 
 
