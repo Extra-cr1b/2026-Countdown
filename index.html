@@ -24,8 +24,13 @@ canvas{position:fixed;inset:0;z-index:0}
 
 /* CLOCK */
 #clock{
-  position:absolute;bottom:140px;width:100%;
-  display:flex;justify-content:center;gap:20px;z-index:2;
+  position:absolute;
+  bottom:120px;
+  width:100%;
+  display:flex;
+  justify-content:center;
+  gap:20px;
+  z-index:2;
 }
 .unit{text-align:center;font-family:"Comic Sans MS",cursive}
 .flip{
@@ -38,13 +43,14 @@ canvas{position:fixed;inset:0;z-index:0}
 /* COOKIE */
 #cookieArea{
   position:absolute;
-  inset:0;
+  top:120px;          /* 👈 moved higher */
+  width:100%;
   display:flex;
   flex-direction:column;
-  justify-content:center;
   align-items:center;
   z-index:3;
 }
+
 #cookie{
   width:170px;
   height:170px;
@@ -52,6 +58,7 @@ canvas{position:fixed;inset:0;z-index:0}
   cursor:pointer;
   position:relative;
   transition:transform .08s;
+  box-shadow:0 0 25px rgba(255,255,255,.4);
 }
 #cookie:active{transform:scale(.92)}
 
@@ -59,17 +66,21 @@ canvas{position:fixed;inset:0;z-index:0}
   position:absolute;
   width:3px;
   height:60px;
-  background:rgba(0,0,0,.5);
+  background:rgba(0,0,0,.6);
   top:50%;
   left:50%;
   transform-origin:top;
 }
 
-#cookieCount{margin-top:10px;font-family:"Comic Sans MS",cursive}
+#cookieCount{
+  margin-top:10px;
+  font-family:"Comic Sans MS",cursive;
+}
 
 #skinPicker{
   margin-top:8px;
-  background:#111;color:white;
+  background:#111;
+  color:white;
   border:1px solid #444;
   border-radius:6px;
   padding:4px;
@@ -207,7 +218,7 @@ function animate(){
 }
 animate();
 
-/* COOKIE + CRACKS */
+/* COOKIE + BREAK */
 let cookies=0;
 const cookie=document.getElementById("cookie");
 cookie.style.background="#c68642";
@@ -223,7 +234,17 @@ cookie.onclick=()=>{
  cookies++;
  document.getElementById("cookieCount").textContent="Cookies: "+cookies;
  explode(canvas.width/2,canvas.height/2,80);
- if(cookie.children.length<12) addCrack();
+
+ if(cookies % 5 === 0 && cookie.children.length < 15){
+   addCrack();
+ }
+
+ if(cookies === 50){
+   explode(canvas.width/2, canvas.height/2, 250); // BIG BREAK
+   cookie.innerHTML="";
+   cookies = 0;
+   document.getElementById("cookieCount").textContent="Cookies: 0 (New Cookie!)";
+ }
 };
 
 document.getElementById("skinPicker").onchange=e=>{
