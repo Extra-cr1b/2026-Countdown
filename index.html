@@ -64,6 +64,22 @@ canvas{position:fixed;inset:0;z-index:0}
 }
 button,input{margin:4px}
 #nowPlaying{font-size:14px;opacity:.85}
+
+/* COOKIE CLICKER */
+#cookieBox{
+  position:absolute;
+  bottom:20px;
+  right:20px;
+  z-index:3;
+  text-align:center;
+  font-family:"Comic Sans MS",cursive;
+}
+#cookie{
+  width:120px;
+  cursor:pointer;
+  transition:transform .1s;
+}
+#cookie:active{transform:scale(0.9)}
 </style>
 </head>
 
@@ -90,6 +106,12 @@ button,input{margin:4px}
   <div id="nowPlaying">Click anywhere to start music 🎶</div>
 </div>
 
+<!-- COOKIE CLICKER -->
+<div id="cookieBox">
+  <img id="cookie" src="https://upload.wikimedia.org/wikipedia/commons/6/69/Chocolate_Chip_Cookie.png">
+  <div>Cookies: <span id="cookieCount">0</span></div>
+</div>
+
 <audio id="player"></audio>
 
 <script>
@@ -106,34 +128,20 @@ const playlist=[
  {f:"beautiful_things.mp3",n:"Beautiful Things"},
  {f:"gods_got_my_back.mp3",n:"God's Got My Back"},
  {f:"blessings.mp3",n:"Blessings"},
- {f:"song5.mp3",n:"Extra Song 1"},
- {f:"song6.mp3",n:"Extra Song 2"},
- {f:"song7.mp3",n:"Extra Song 3"},
  {f:"final_countdown.mp3",n:"The Final Countdown"}
 ];
-
 let songIndex=0;
 const player=document.getElementById("player");
 const nowPlaying=document.getElementById("nowPlaying");
-
 player.volume=.7;
 document.getElementById("vol").oninput=e=>player.volume=e.target.value;
-
 function playSong(){
   player.src=playlist[songIndex].f;
   player.play();
   nowPlaying.textContent="Now Playing: "+playlist[songIndex].n;
 }
-
-function nextSong(){
-  songIndex=(songIndex+1)%playlist.length;
-  playSong();
-}
-function prevSong(){
-  songIndex=(songIndex-1+playlist.length)%playlist.length;
-  playSong();
-}
-
+function nextSong(){songIndex=(songIndex+1)%playlist.length;playSong()}
+function prevSong(){songIndex=(songIndex-1+playlist.length)%playlist.length;playSong()}
 player.onended=nextSong;
 document.body.addEventListener("click",playSong,{once:true});
 
@@ -141,8 +149,6 @@ document.body.addEventListener("click",playSong,{once:true});
 const T=new Date("January 1, 2026 00:00:00").getTime();
 const el={d:d,h:h,m:m,s:s};
 const final=document.getElementById("final");
-let exploded=false;
-
 function flip(e,v){
  if(e.textContent!=v){
   e.textContent=v;
@@ -150,41 +156,36 @@ function flip(e,v){
   setTimeout(()=>e.classList.remove("animate"),400);
  }
 }
-
 setInterval(()=>{
  const diff=T-Date.now();
- if(diff<=0 && !exploded){
-   exploded=true;
-   final.style.display="none";
-   explode(canvas.width/2,canvas.height/2,200);
-   return;
- }
  if(diff<=0) return;
-
  const D=Math.floor(diff/86400000),
        H=Math.floor(diff/3600000)%24,
        M=Math.floor(diff/60000)%60,
        S=Math.floor(diff/1000)%60;
-
  flip(el.d,D); flip(el.h,H); flip(el.m,M); flip(el.s,S);
-
- if(D===0 && H===0 && M===0 && S<=10){
-   final.style.display="flex";
-   final.textContent=S;
+ if(D===0&&H===0&&M===0&&S<=10){
+  final.style.display="flex";
+  final.textContent=S;
  }
 },1000);
 
-/* VISUALS – SLOWED FIREWORKS */
+/* CANVAS */
 const canvas=document.getElementById("canvas");
 const ctx=canvas.getContext("2d");
 resize();window.onresize=resize;
 function resize(){canvas.width=innerWidth;canvas.height=innerHeight}
 
+/* SNOW */
+let snow=[];
+for(let i=0;i<120;i++)snow.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*3+1,s:Math.random()+0.5});
+
+/* FIREWORKS */
 class Rocket{
- constructor(){
-  this.x=Math.random()*canvas.width;
+ constructor(x){
+  this.x=x??Math.random()*canvas.width;
   this.y=canvas.height;
-  this.vy=-(Math.random()*4+6); // slower
+  this.vy=-(Math.random()*4+6);
   this.ty=Math.random()*canvas.height/2;
  }
  update(){
@@ -198,13 +199,12 @@ class Rocket{
   return true;
  }
 }
-
 class Spark{
  constructor(x,y){
   this.x=x;this.y=y;
-  this.vx=(Math.random()-.5)*4; // slower
+  this.vx=(Math.random()-.5)*4;
   this.vy=(Math.random()-.5)*4;
-  this.life=120; // longer
+  this.life=120;
   this.c=`hsl(${Math.random()*360},100%,60%)`;
  }
  update(){
@@ -213,18 +213,34 @@ class Spark{
   ctx.fillRect(this.x,this.y,3,3);
  }
 }
-
 let rockets=[],sparks=[];
+function explode(x,y,c){for(let i=0;i<c;i++)sparks.push(new Spark(x,y))}
+setInterval(()=>rockets.push(new Rocket()),1200);
 
-function explode(x,y,count){
- for(let i=0;i<count;i++)sparks.push(new Spark(x,y));
-}
+/* COOKIE CLICKER LOGIC */
+let cookies=0;
+const cookie=document.getElementById("cookie");
+const cookieCount=document.getElementById("cookieCount");
+cookie.onclick=e=>{
+ cookies++;
+ cookieCount.textContent=cookies;
+ explode(e.clientX,e.clientY,80);
+ rockets.push(new Rocket(e.clientX));
+};
 
-setInterval(()=>rockets.push(new Rocket()),1200); // slower launch
-
+/* ANIMATION LOOP */
 function animate(){
- ctx.fillStyle="rgba(0,0,0,.2)";
+ ctx.fillStyle="rgba(0,0,0,.25)";
  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+ snow.forEach(f=>{
+  f.y+=f.s;
+  if(f.y>canvas.height)f.y=0;
+  ctx.fillStyle="white";
+  ctx.beginPath();
+  ctx.arc(f.x,f.y,f.r,0,Math.PI*2);
+  ctx.fill();
+ });
 
  rockets=rockets.filter(r=>r.update());
  sparks=sparks.filter(p=>{p.update();return p.life>0});
@@ -235,7 +251,4 @@ animate();
 </script>
 
 </body>
-<footer>
-  <p>&copy; 2025 [Your Name] | CodeNation Bootcamp</p>
-</footer>
 </html>
