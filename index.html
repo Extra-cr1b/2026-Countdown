@@ -24,7 +24,7 @@ canvas{position:fixed;inset:0;z-index:0}
 
 /* CLOCK */
 #clock{
-  position:absolute;bottom:160px;width:100%;
+  position:absolute;bottom:140px;width:100%;
   display:flex;justify-content:center;gap:20px;z-index:2;
 }
 .unit{text-align:center;font-family:"Comic Sans MS",cursive}
@@ -35,23 +35,28 @@ canvas{position:fixed;inset:0;z-index:0}
 }
 .label{font-size:14px;opacity:.8}
 
-/* COOKIE CLICKER */
-#cookieBox{
+/* COOKIE */
+#cookieArea{
   position:absolute;
-  right:20px;
-  bottom:20px;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
   z-index:3;
-  text-align:center;
-  font-family:"Comic Sans MS",cursive;
 }
 #cookie{
-  width:120px;
+  width:160px;
+  height:160px;
+  border-radius:50%;
   cursor:pointer;
+  box-shadow:0 0 25px rgba(255,255,255,.4);
   transition:transform .1s;
 }
-#cookie:active{transform:scale(.9)}
-#cookieSkin{
-  margin-top:6px;
+#cookie:active{transform:scale(.92)}
+#cookieCount{margin-top:10px;font-family:"Comic Sans MS",cursive}
+#skinPicker{
+  margin-top:8px;
   background:#111;color:white;
   border:1px solid #444;
   border-radius:6px;
@@ -65,12 +70,6 @@ canvas{position:fixed;inset:0;z-index:0}
   font-family:Montserrat,sans-serif;
   font-size:200px;font-weight:900;
   color:white;z-index:5;
-}
-
-/* CONTROLS */
-#controls{
-  position:absolute;bottom:20px;width:100%;
-  text-align:center;z-index:2;
 }
 </style>
 </head>
@@ -90,19 +89,17 @@ canvas{position:fixed;inset:0;z-index:0}
 
 <div id="final"></div>
 
-<!-- COOKIE CLICKER -->
-<div id="cookieBox">
-  <img id="cookie" src="https://upload.wikimedia.org/wikipedia/commons/6/69/Chocolate_Chip_Cookie.png">
-  <div>Cookies: <span id="cookieCount">0</span></div>
-  <select id="cookieSkin">
-    <option value="classic">Classic</option>
-    <option value="pink">Pink</option>
-    <option value="choco">Chocolate</option>
-    <option value="gold">Golden</option>
+<!-- COOKIE -->
+<div id="cookieArea">
+  <div id="cookie"></div>
+  <div id="cookieCount">Cookies: 0</div>
+  <select id="skinPicker">
+    <option value="#c68642">Classic</option>
+    <option value="#ff7eb9">Pink</option>
+    <option value="#4b2e1e">Chocolate</option>
+    <option value="#ffd700">Golden</option>
   </select>
 </div>
-
-<audio id="player"></audio>
 
 <script>
 /* COUNTDOWN */
@@ -114,16 +111,16 @@ s=document.getElementById("s"),
 final=document.getElementById("final");
 
 setInterval(()=>{
-  const diff=T-Date.now();
-  if(diff<=0)return;
-  d.textContent=Math.floor(diff/86400000);
-  h.textContent=Math.floor(diff/3600000)%24;
-  m.textContent=Math.floor(diff/60000)%60;
-  s.textContent=Math.floor(diff/1000)%60;
-  if(diff<=10000){
-    final.style.display="flex";
-    final.textContent=Math.ceil(diff/1000);
-  }
+ const diff=T-Date.now();
+ if(diff<=0)return;
+ d.textContent=Math.floor(diff/86400000);
+ h.textContent=Math.floor(diff/3600000)%24;
+ m.textContent=Math.floor(diff/60000)%60;
+ s.textContent=Math.floor(diff/1000)%60;
+ if(diff<=10000){
+  final.style.display="flex";
+  final.textContent=Math.ceil(diff/1000);
+ }
 },1000);
 
 /* CANVAS */
@@ -134,9 +131,8 @@ function resize(){canvas.width=innerWidth;canvas.height=innerHeight}
 
 /* FIREWORKS */
 class Rocket{
- constructor(x=null,y=canvas.height){
-  this.x=x??Math.random()*canvas.width;
-  this.y=y;
+ constructor(x=Math.random()*canvas.width){
+  this.x=x;this.y=canvas.height;
   this.vy=-(Math.random()*3+5);
   this.ty=Math.random()*canvas.height/2;
  }
@@ -147,17 +143,16 @@ class Rocket{
   ctx.moveTo(this.x,this.y);
   ctx.lineTo(this.x,this.y+15);
   ctx.stroke();
-  if(this.y<=this.ty){explode(this.x,this.y,40);return false}
+  if(this.y<=this.ty){explode(this.x,this.y,50);return false}
   return true;
  }
 }
-
 class Spark{
  constructor(x,y){
   this.x=x;this.y=y;
   this.vx=(Math.random()-.5)*4;
   this.vy=(Math.random()-.5)*4;
-  this.life=80;
+  this.life=90;
   this.c=`hsl(${Math.random()*360},100%,60%)`;
  }
  update(){
@@ -172,7 +167,7 @@ class Snow{
  constructor(){
   this.x=Math.random()*canvas.width;
   this.y=Math.random()*canvas.height;
-  this.v=Math.random()*1+0.5;
+  this.v=Math.random()*1+0.4;
  }
  update(){
   this.y+=this.v;
@@ -183,11 +178,12 @@ class Snow{
 }
 
 let rockets=[],sparks=[],snow=[];
+for(let i=0;i<160;i++)snow.push(new Snow());
+setInterval(()=>rockets.push(new Rocket()),1600);
 
-for(let i=0;i<150;i++)snow.push(new Snow());
-setInterval(()=>rockets.push(new Rocket()),1500);
-
-function explode(x,y,c){for(let i=0;i<c;i++)sparks.push(new Spark(x,y));}
+function explode(x,y,c){
+ for(let i=0;i<c;i++)sparks.push(new Spark(x,y));
+}
 
 function animate(){
  ctx.fillStyle="rgba(0,0,0,.25)";
@@ -199,36 +195,21 @@ function animate(){
 }
 animate();
 
-/* COOKIE CLICKER */
+/* COOKIE */
 let cookies=0;
 const cookie=document.getElementById("cookie");
-const cookieCount=document.getElementById("cookieCount");
+cookie.style.background="#c68642";
 
 cookie.onclick=()=>{
  cookies++;
- cookieCount.textContent=cookies;
- explode(
-   cookie.getBoundingClientRect().left+60,
-   cookie.getBoundingClientRect().top,
-   60
- );
+ document.getElementById("cookieCount").textContent="Cookies: "+cookies;
+ explode(canvas.width/2,canvas.height/2,80);
 };
 
-/* COOKIE SKINS */
-const skins={
- classic:"https://github.com/Extra-cr1b/2026-Countdown/blob/main/cookie.png",
- pink:"https://i.imgur.com/2RMcG9g.png",
- choco:"https://www.vecteezy.com/png/12027958-doodling-freehand-outline-sketch-drawing-of-a-chocolate-bar",
- gold:"https://i.imgur.com/zZK7J6S.png"
-};
-
-document.getElementById("cookieSkin").onchange=e=>{
- cookie.src=skins[e.target.value];
+document.getElementById("skinPicker").onchange=e=>{
+ cookie.style.background=e.target.value;
 };
 </script>
 
 </body>
 </html>
-
-
-
