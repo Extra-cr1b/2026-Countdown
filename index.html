@@ -24,7 +24,7 @@ canvas{position:fixed;inset:0;z-index:0}
 
 /* CLOCK */
 #clock{
-  position:absolute;bottom:140px;width:100%;
+  position:absolute;bottom:120px;width:100%;
   display:flex;justify-content:center;gap:20px;z-index:2;
 }
 .unit{text-align:center;font-family:"Comic Sans MS",cursive}
@@ -37,7 +37,7 @@ canvas{position:fixed;inset:0;z-index:0}
 
 /* COOKIE */
 #cookieArea{
-  position:absolute;top:130px;width:100%;
+  position:absolute;top:120px;width:100%;
   display:flex;flex-direction:column;align-items:center;z-index:3;
 }
 #cookie{
@@ -58,10 +58,8 @@ canvas{position:fixed;inset:0;z-index:0}
 #music{
   position:absolute;bottom:20px;width:100%;
   text-align:center;z-index:4;
-  font-family:"Comic Sans MS",cursive;
 }
-button{margin:3px;padding:6px 10px}
-input[type=range]{width:160px}
+button{margin:3px}
 
 /* FINAL */
 #final{
@@ -101,12 +99,8 @@ input[type=range]{width:160px}
 
 <div id="music">
   <button onclick="prevSong()">⏮️</button>
-  <button onclick="toggleMute()">🔇</button>
   <button onclick="nextSong()">⏭️</button>
-  <br>
-  Volume:
-  <input type="range" min="0" max="100" value="60" id="volume">
-  <div id="nowPlaying">Click anywhere to start music 🎶</div>
+  <span id="nowPlaying">Click anywhere to start music 🎶</span>
 </div>
 
 <audio id="player"></audio>
@@ -119,35 +113,18 @@ const playlist=[
  {f:"gods_got_my_back.mp3",n:"God's Got My Back"},
  {f:"blessings.mp3",n:"Blessings"}
 ];
-
 let song=0;
 const player=document.getElementById("player");
 const nowPlaying=document.getElementById("nowPlaying");
-const volume=document.getElementById("volume");
-let muted=false;
-
-player.volume=0.6;
 
 function playSong(){
  player.src=playlist[song].f;
  player.play();
  nowPlaying.textContent="Now Playing: "+playlist[song].n;
 }
-
 function nextSong(){song=(song+1)%playlist.length;playSong();}
 function prevSong(){song=(song-1+playlist.length)%playlist.length;playSong();}
 player.onended=nextSong;
-
-volume.oninput=()=>{
- player.volume=volume.value/100;
- muted=false;
-};
-
-function toggleMute(){
- muted=!muted;
- player.muted=muted;
-}
-
 document.body.addEventListener("click",playSong,{once:true});
 
 /* COUNTDOWN */
@@ -163,10 +140,7 @@ setInterval(()=>{
  h.textContent=Math.floor(diff/3600000)%24;
  m.textContent=Math.floor(diff/60000)%60;
  s.textContent=Math.floor(diff/1000)%60;
- if(diff<=10000){
-  final.style.display="flex";
-  final.textContent=Math.ceil(diff/1000);
- }
+ if(diff<=10000){final.style.display="flex";final.textContent=Math.ceil(diff/1000);}
 },1000);
 
 /* CANVAS */
@@ -229,15 +203,14 @@ cookie.onclick=e=>{
  if(cookies%5===0&&cookie.children.length<15)crack();
  if(cookies===50){
   explode(canvas.width/2,canvas.height/2,300);
-  cookie.innerHTML="";
-  cookies=0;
+  cookie.innerHTML="";cookies=0;
   cookieCount.textContent="Cookies: 0 (New Cookie!)";
  }
 };
 
 skinPicker.onchange=e=>cookie.style.background=e.target.value;
 
-/* CLICK FIREWORK */
+/* CLICK ANYWHERE */
 document.body.addEventListener("click",e=>{
  explode(e.clientX,e.clientY,80);
 });
@@ -245,3 +218,4 @@ document.body.addEventListener("click",e=>{
 
 </body>
 </html>
+
