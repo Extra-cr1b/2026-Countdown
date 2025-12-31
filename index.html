@@ -252,65 +252,6 @@ cookie.onclick=e=>{
 
 skinPicker.onchange=e=>cookie.style.background=e.target.value;
 
-  /* VISUALS – SLOWED FIREWORKS */
-const canvas=document.getElementById("canvas");
-const ctx=canvas.getContext("2d");
-resize();window.onresize=resize;
-function resize(){canvas.width=innerWidth;canvas.height=innerHeight}
-
-class Rocket{
- constructor(){
-  this.x=Math.random()*canvas.width;
-  this.y=canvas.height;
-  this.vy=-(Math.random()*4+6); // slower
-  this.ty=Math.random()*canvas.height/2;
- }
- update(){
-  this.y+=this.vy;
-  ctx.strokeStyle="white";
-  ctx.beginPath();
-  ctx.moveTo(this.x,this.y);
-  ctx.lineTo(this.x,this.y+20);
-  ctx.stroke();
-  if(this.y<=this.ty){explode(this.x,this.y,50);return false}
-  return true;
- }
-}
-
-class Spark{
- constructor(x,y){
-  this.x=x;this.y=y;
-  this.vx=(Math.random()-.5)*4; // slower
-  this.vy=(Math.random()-.5)*4;
-  this.life=120; // longer
-  this.c=`hsl(${Math.random()*360},100%,60%)`;
- }
- update(){
-  this.x+=this.vx;this.y+=this.vy;this.life--;
-  ctx.fillStyle=this.c;
-  ctx.fillRect(this.x,this.y,3,3);
- }
-}
-
-let rockets=[],sparks=[];
-
-function explode(x,y,count){
- for(let i=0;i<count;i++)sparks.push(new Spark(x,y));
-}
-
-setInterval(()=>rockets.push(new Rocket()),1200); // slower launch
-
-function animate(){
- ctx.fillStyle="rgba(0,0,0,.2)";
- ctx.fillRect(0,0,canvas.width,canvas.height);
-
- rockets=rockets.filter(r=>r.update());
- sparks=sparks.filter(p=>{p.update();return p.life>0});
-
- requestAnimationFrame(animate);
-}
-animate();
-
 /* CLICK FIREWORK */
 document.body.addEventListener("click",e=>{
  explode(e.clientX,e.clientY,80);
@@ -319,6 +260,7 @@ document.body.addEventListener("click",e=>{
 
 </body>
 </html>
+
 
 
 
