@@ -7,68 +7,56 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
 
 <style>
-html,body{
-  margin:0;padding:0;height:100%;
-  background:black;overflow:hidden;color:white;
-}
+html,body{margin:0;height:100%;background:black;overflow:hidden;color:white}
 canvas{position:fixed;inset:0;z-index:0}
 
-/* TITLE */
 #title{
-  position:absolute;top:20px;width:100%;
-  text-align:center;font-family:Montserrat,sans-serif;
-  font-size:56px;font-weight:900;color:red;
-  text-shadow:0 0 20px red,0 0 70px crimson;
-  z-index:2;
+ position:absolute;top:20px;width:100%;text-align:center;
+ font-family:Montserrat;font-size:56px;font-weight:900;
+ color:red;text-shadow:0 0 20px red,0 0 70px crimson;z-index:2
 }
 
-/* CLOCK */
 #clock{
-  position:absolute;bottom:140px;width:100%;
-  display:flex;justify-content:center;gap:20px;z-index:2;
+ position:absolute;bottom:140px;width:100%;
+ display:flex;justify-content:center;gap:20px;z-index:2
 }
-.unit{text-align:center;font-family:"Comic Sans MS",cursive}
+.unit{text-align:center;font-family:"Comic Sans MS"}
 .flip{
-  background:#111;border-radius:14px;
-  padding:15px 22px;font-size:34px;min-width:90px;
-  box-shadow:0 0 18px rgba(255,0,0,.8);
+ background:#111;border-radius:14px;
+ padding:15px 22px;font-size:34px;min-width:90px;
+ box-shadow:0 0 18px rgba(255,0,0,.8)
 }
 .label{font-size:14px;opacity:.8}
 
-/* COOKIE */
 #cookieArea{
-  position:absolute;top:130px;width:100%;
-  display:flex;flex-direction:column;align-items:center;z-index:3;
+ position:absolute;top:130px;width:100%;
+ display:flex;flex-direction:column;align-items:center;z-index:3
 }
 #cookie{
-  width:170px;height:170px;border-radius:50%;
-  cursor:pointer;position:relative;
-  box-shadow:0 0 25px rgba(255,255,255,.4);
+ width:170px;height:170px;border-radius:50%;
+ cursor:pointer;position:relative;
+ box-shadow:0 0 25px rgba(255,255,255,.4)
 }
 #cookie:active{transform:scale(.92)}
 .crack{
-  position:absolute;width:3px;height:60px;
-  background:rgba(0,0,0,.6);
-  top:50%;left:50%;transform-origin:top;
+ position:absolute;width:3px;height:60px;
+ background:rgba(0,0,0,.6);
+ top:50%;left:50%;transform-origin:top
 }
-#cookieCount{margin-top:8px;font-family:"Comic Sans MS",cursive}
+#cookieCount{margin-top:8px;font-family:"Comic Sans MS"}
 #skinPicker{margin-top:6px}
 
-/* MUSIC */
 #music{
-  position:absolute;bottom:20px;width:100%;
-  text-align:center;z-index:4;
-  font-family:"Comic Sans MS",cursive;
+ position:absolute;bottom:20px;width:100%;
+ text-align:center;z-index:4;font-family:"Comic Sans MS"
 }
 button{margin:3px;padding:6px 10px}
 input[type=range]{width:160px}
 
-/* FINAL */
 #final{
-  position:fixed;inset:0;display:none;
-  align-items:center;justify-content:center;
-  font-family:Montserrat,sans-serif;
-  font-size:200px;font-weight:900;z-index:5;
+ position:fixed;inset:0;display:none;
+ align-items:center;justify-content:center;
+ font-family:Montserrat;font-size:200px;font-weight:900;z-index:5
 }
 </style>
 </head>
@@ -80,86 +68,73 @@ input[type=range]{width:160px}
 <div id="title">COUNTDOWN TO 2026</div>
 
 <div id="clock">
-  <div class="unit"><div class="flip" id="d">0</div><div class="label">Days</div></div>
-  <div class="unit"><div class="flip" id="h">0</div><div class="label">Hours</div></div>
-  <div class="unit"><div class="flip" id="m">0</div><div class="label">Minutes</div></div>
-  <div class="unit"><div class="flip" id="s">0</div><div class="label">Seconds</div></div>
+ <div class="unit"><div class="flip" id="d">0</div><div class="label">Days</div></div>
+ <div class="unit"><div class="flip" id="h">0</div><div class="label">Hours</div></div>
+ <div class="unit"><div class="flip" id="m">0</div><div class="label">Minutes</div></div>
+ <div class="unit"><div class="flip" id="s">0</div><div class="label">Seconds</div></div>
 </div>
 
 <div id="final"></div>
 
 <div id="cookieArea">
-  <div id="cookie"></div>
-  <div id="cookieCount">Cookies: 0</div>
-  <select id="skinPicker">
-    <option value="#c68642">Classic</option>
-    <option value="#ff7eb9">Pink</option>
-    <option value="#4b2e1e">Chocolate</option>
-    <option value="#ffd700">Golden</option>
-  </select>
+ <div id="cookie"></div>
+ <div id="cookieCount">Cookies: 0</div>
+ <select id="skinPicker">
+  <option value="#c68642">Classic</option>
+  <option value="#ff7eb9">Pink</option>
+  <option value="#4b2e1e">Chocolate</option>
+  <option value="#ffd700">Golden</option>
+ </select>
 </div>
 
 <div id="music">
-  <button onclick="prevSong()">⏮️</button>
-  <button onclick="toggleMute()">🔇</button>
-  <button onclick="nextSong()">⏭️</button>
-  <br>
-  Volume:
-  <input type="range" min="0" max="100" value="60" id="volume">
-  <div id="nowPlaying">Click anywhere to start music 🎶</div>
+ <button onclick="prevSong()">⏮️</button>
+ <button onclick="toggleMute()">🔇</button>
+ <button onclick="nextSong()">⏭️</button><br>
+ Volume <input type="range" min="0" max="100" value="60" id="volume">
+ <div id="nowPlaying">Click anywhere to start music 🎶</div>
 </div>
 
 <audio id="player"></audio>
 
 <script>
-/* MUSIC */
+// ---------- MUSIC ----------
 const playlist=[
  {f:"firework.mp3",n:"Firework"},
- {f:"beautiful_things.mp3",n:"Royalty"},
+ {f:"beautiful_things.mp3",n:"Beautiful Things"},
  {f:"gods_got_my_back.mp3",n:"God's Got My Back"},
  {f:"blessings.mp3",n:"Blessings"},
  {f:"song5.mp3",n:"Yeshuah"},
- {f:"song6.mp3",n:"Big guy"},
+ {f:"song6.mp3",n:"Big Guy"},
  {f:"song7.mp3",n:"Golden"},
  {f:"Big G.mp3",n:"Big God"},
  {f:"LoveM.mp3",n:"Love Me"},
- {f:"Angel.mp3",n:"Angel with a shotgun"},
- {f:"ImadeIt.mp3",n:"I made it through"},
- {f:"teeth.mp3" .n:"Teeth"}
+ {f:"Angel.mp3",n:"Angel With a Shotgun"},
+ {f:"ImadeIt.mp3",n:"I Made It"},
+ {f:"teeth.mp3",n:"Teeth"}
 ];
 
-let song=0;
+let song=0, muted=false;
 const player=document.getElementById("player");
 const nowPlaying=document.getElementById("nowPlaying");
 const volume=document.getElementById("volume");
-let muted=false;
 
 player.volume=0.6;
+volume.oninput=()=>player.volume=volume.value/100;
 
 function playSong(){
  player.src=playlist[song].f;
  player.play();
  nowPlaying.textContent="Now Playing: "+playlist[song].n;
 }
-
 function nextSong(){song=(song+1)%playlist.length;playSong();}
 function prevSong(){song=(song-1+playlist.length)%playlist.length;playSong();}
+function toggleMute(){player.muted=!player.muted;}
 player.onended=nextSong;
-
-volume.oninput=()=>{
- player.volume=volume.value/100;
- muted=false;
-};
-
-function toggleMute(){
- muted=!muted;
- player.muted=muted;
-}
-
 document.body.addEventListener("click",playSong,{once:true});
 
-/* COUNTDOWN */
-const T=new Date("January 1, 2026 00:00:00").getTime();
+// ---------- COUNTDOWN ----------
+const T=new Date("January 1, 2026").getTime();
 const d=document.getElementById("d"),h=document.getElementById("h"),
 m=document.getElementById("m"),s=document.getElementById("s"),
 final=document.getElementById("final");
@@ -177,19 +152,35 @@ setInterval(()=>{
  }
 },1000);
 
-/* CANVAS */
+// ---------- CANVAS ----------
 const canvas=document.getElementById("canvas");
 const ctx=canvas.getContext("2d");
-canvas.width=innerWidth;canvas.height=innerHeight;
-onresize=()=>{canvas.width=innerWidth;canvas.height=innerHeight}
+function resize(){canvas.width=innerWidth;canvas.height=innerHeight}
+resize();addEventListener("resize",resize);
 
-/* PARTICLES */
+// ---------- FIREWORKS ----------
+class Rocket{
+ constructor(){
+  this.x=Math.random()*canvas.width;
+  this.y=canvas.height;
+  this.vy=-(Math.random()*3+6);
+  this.target=Math.random()*canvas.height*0.5;
+  this.color=`hsl(${Math.random()*360},100%,60%)`;
+ }
+ update(){
+  this.y+=this.vy;
+  ctx.strokeStyle=this.color;
+  ctx.beginPath();ctx.moveTo(this.x,this.y);ctx.lineTo(this.x,this.y+12);ctx.stroke();
+  if(this.y<this.target){explode(this.x,this.y,50,this.color);return false}
+  return true;
+ }
+}
 class Spark{
  constructor(x,y,c){
   this.x=x;this.y=y;this.life=80;
-  this.vx=(Math.random()-.5)*5;
-  this.vy=(Math.random()-.5)*5;
-  this.c=c||`hsl(${Math.random()*360},100%,60%)`;
+  this.vx=(Math.random()-.5)*4;
+  this.vy=(Math.random()-.5)*4;
+  this.c=c;
  }
  update(){
   this.x+=this.vx;this.y+=this.vy;this.life--;
@@ -197,29 +188,30 @@ class Spark{
  }
 }
 class Snow{
- constructor(){this.x=Math.random()*canvas.width;this.y=Math.random()*canvas.height;this.v=Math.random()+.4}
+ constructor(){this.x=Math.random()*canvas.width;this.y=Math.random()*canvas.height;this.v=Math.random()+.3}
  update(){this.y+=this.v;if(this.y>canvas.height)this.y=0;ctx.fillStyle="white";ctx.fillRect(this.x,this.y,2,2)}
 }
 
-let sparks=[],snow=[];
+let rockets=[],sparks=[],snow=[];
 for(let i=0;i<160;i++)snow.push(new Snow());
-
-function explode(x,y,n,c){
- for(let i=0;i<n;i++)sparks.push(new Spark(x,y,c));
-}
+function explode(x,y,n,c){for(let i=0;i<n;i++)sparks.push(new Spark(x,y,c))}
+setInterval(()=>rockets.push(new Rocket()),1200);
 
 function animate(){
- ctx.fillStyle="rgba(0,0,0,.25)";
+ ctx.fillStyle="rgba(0,0,0,.15)";
  ctx.fillRect(0,0,canvas.width,canvas.height);
  snow.forEach(s=>s.update());
+ rockets=rockets.filter(r=>r.update());
  sparks=sparks.filter(p=>{p.update();return p.life>0});
  requestAnimationFrame(animate);
 }
 animate();
 
-/* COOKIE */
+// ---------- COOKIE ----------
 let cookies=0;
 const cookie=document.getElementById("cookie");
+const cookieCount=document.getElementById("cookieCount");
+const skinPicker=document.getElementById("skinPicker");
 cookie.style.background="#c68642";
 
 function crack(){
@@ -237,15 +229,13 @@ cookie.onclick=e=>{
  if(cookies%5===0&&cookie.children.length<15)crack();
  if(cookies===50){
   explode(canvas.width/2,canvas.height/2,300);
-  cookie.innerHTML="";
-  cookies=0;
+  cookie.innerHTML="";cookies=0;
   cookieCount.textContent="Cookies: 0 (New Cookie!)";
  }
 };
-
 skinPicker.onchange=e=>cookie.style.background=e.target.value;
 
-/* CLICK FIREWORK */
+// ---------- CLICK FIREWORK ----------
 document.body.addEventListener("click",e=>{
  explode(e.clientX,e.clientY,80);
 });
