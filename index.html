@@ -18,7 +18,6 @@ canvas{position:fixed;inset:0;z-index:0}
   position:absolute;top:20px;width:100%;
   text-align:center;font-family:Montserrat,sans-serif;
   font-size:56px;font-weight:900;color:red;
-  text-shadow:0 0 20px red,0 0 70px crimson;
   z-index:2;
 }
 
@@ -42,7 +41,7 @@ canvas{position:fixed;inset:0;z-index:0}
 }
 #cookie{
   width:170px;height:170px;border-radius:50%;
-  cursor:pointer;position:relative;
+  cursor:pointer;
   box-shadow:0 0 25px rgba(255,255,255,.4);
 }
 #cookie:active{transform:scale(.92)}
@@ -58,8 +57,9 @@ canvas{position:fixed;inset:0;z-index:0}
 #music{
   position:absolute;bottom:20px;width:100%;
   text-align:center;z-index:4;
+  font-family:"Comic Sans MS",cursive;
 }
-button{margin:3px}
+button{margin:3px;padding:6px 10px}
 
 /* FINAL */
 #final{
@@ -99,30 +99,22 @@ button{margin:3px}
 
 <div id="music">
   <button onclick="prevSong()">⏮️</button>
- <button onclick="togglemute()">🔇</button>
+  <button onclick="toggleMute()">🔇</button>
   <button onclick="nextSong()">⏭️</button>
-  <span id="nowPlaying">Click anywhere to start music 🎶</span>
+  <div id="nowPlaying">Click anywhere to start music 🎶</div>
 </div>
 
 <audio id="player"></audio>
 
 <script>
-/* MUSIC */
+/* ===== MUSIC ===== */
 const playlist=[
  {f:"firework.mp3",n:"Firework"},
- {f:"beautiful_things.mp3",n:"Royalty"},
+ {f:"beautiful_things.mp3",n:"Beautiful Things"},
  {f:"gods_got_my_back.mp3",n:"God's Got My Back"},
- {f:"blessings.mp3",n:"Blessings"},
- {f:"song5.mp3",n:"Yeshuah"},
- {f:"song6.mp3",n:"Big guy"},
- {f:"song7.mp3",n:"Golden"},
- {f:"Big G.mp3",n:"Big God"},
- {f:"LoveM.mp3",n:"Love Me"},
- {f:"Angel.mp3",n:"Angel with a shotgun"},
- {f:"ImadeIt.mp3",n:"I made it through"},
- {f:"teeth" ,n:"Teeth"}
+ {f:"blessings.mp3",n:"Blessings"}
 ];
-let song=0;
+let song=0, muted=false;
 const player=document.getElementById("player");
 const nowPlaying=document.getElementById("nowPlaying");
 
@@ -133,10 +125,11 @@ function playSong(){
 }
 function nextSong(){song=(song+1)%playlist.length;playSong();}
 function prevSong(){song=(song-1+playlist.length)%playlist.length;playSong();}
+function toggleMute(){muted=!muted;player.muted=muted;}
 player.onended=nextSong;
 document.body.addEventListener("click",playSong,{once:true});
 
-/* COUNTDOWN */
+/* ===== COUNTDOWN ===== */
 const T=new Date("January 1, 2026 00:00:00").getTime();
 const d=document.getElementById("d"),h=document.getElementById("h"),
 m=document.getElementById("m"),s=document.getElementById("s"),
@@ -149,148 +142,121 @@ setInterval(()=>{
  h.textContent=Math.floor(diff/3600000)%24;
  m.textContent=Math.floor(diff/60000)%60;
  s.textContent=Math.floor(diff/1000)%60;
- if(diff<=10000){final.style.display="flex";final.textContent=Math.ceil(diff/1000);}
+ if(diff<=10000){
+  final.style.display="flex";
+  final.textContent=Math.ceil(diff/1000);
+ }
 },1000);
 
-/* CANVAS */
+/* ===== CANVAS ===== */
 const canvas=document.getElementById("canvas");
 const ctx=canvas.getContext("2d");
-canvas.width=innerWidth;canvas.height=innerHeight;
-onresize=()=>{canvas.width=innerWidth;canvas.height=innerHeight}
+function resize(){canvas.width=innerWidth;canvas.height=innerHeight}
+resize();window.onresize=resize;
 
-/* PARTICLES */
+/* ===== PARTICLES ===== */
 class Spark{
  constructor(x,y,c){
-  this.x=x;this.y=y;this.life=80;
+  this.x=x;this.y=y;
   this.vx=(Math.random()-.5)*5;
   this.vy=(Math.random()-.5)*5;
+  this.life=80;
   this.c=c||`hsl(${Math.random()*360},100%,60%)`;
  }
  update(){
   this.x+=this.vx;this.y+=this.vy;this.life--;
-  ctx.fillStyle=this.c;ctx.fillRect(this.x,this.y,3,3);
+  ctx.fillStyle=this.c;
+  ctx.fillRect(this.x,this.y,3,3);
  }
 }
-class Snow{
- constructor(){this.x=Math.random()*canvas.width;this.y=Math.random()*canvas.height;this.v=Math.random()+.4}
- update(){this.y+=this.v;if(this.y>canvas.height)this.y=0;ctx.fillStyle="white";ctx.fillRect(this.x,this.y,2,2)}
+
+class Rocket{
+ constructor(){
+  this.x=Math.random()*canvas.width;
+  this.y=canvas.height;
+  this.vy=-(Math.random()*4+6);
+  this.ty=Math.random()*canvas.height*0.5;
+  this.c=`hsl(${Math.random()*360},100%,60%)`;
+ }
+ update(){
+  this.y+=this.vy;
+  ctx.strokeStyle=this.c;
+  ctx.beginPath();
+  ctx.moveTo(this.x,this.y);
+  ctx.lineTo(this.x,this.y+15);
+  ctx.stroke();
+  if(this.y<=this.ty){
+    explode(this.x,this.y,60,this.c);
+    return false;
+  }
+  return true;
+ }
 }
 
-let sparks=[],snow=[];
+class Snow{
+ constructor(){
+  this.x=Math.random()*canvas.width;
+  this.y=Math.random()*canvas.height;
+  this.v=Math.random()+.4;
+ }
+ update(){
+  this.y+=this.v;
+  if(this.y>canvas.height)this.y=0;
+  ctx.fillStyle="white";
+  ctx.fillRect(this.x,this.y,2,2);
+ }
+}
+
+let sparks=[],rockets=[],snow=[];
 for(let i=0;i<160;i++)snow.push(new Snow());
 
-function explode(x,y,n,c){
- for(let i=0;i<n;i++)sparks.push(new Spark(x,y,c));
-}
-
-function animate(){
- ctx.fillStyle="rgba(0,0,0,.25)";
- ctx.fillRect(0,0,canvas.width,canvas.height);
- snow.forEach(s=>s.update());
- sparks=sparks.filter(p=>{p.update();return p.life>0});
- requestAnimationFrame(animate);
-}
-animate();
-
- /* ================= FIREWORKS (SAFE) ================= */
-class Rocket{
-  constructor(){
-    this.x=Math.random()*canvas.width;
-    this.y=canvas.height;
-    this.vy=-(Math.random()*4+6);
-    this.targetY=Math.random()*canvas.height*0.5;
-    this.color=`hsl(${Math.random()*360},100%,60%)`;
-  }
-  update(){
-    this.y+=this.vy;
-    ctx.strokeStyle=this.color;
-    ctx.beginPath();
-    ctx.moveTo(this.x,this.y);
-    ctx.lineTo(this.x,this.y+15);
-    ctx.stroke();
-    if(this.y<=this.targetY){
-      explode(this.x,this.y,this.color);
-      return false;
-    }
-    return true;
-  }
-}
-
-class Spark{
-  constructor(x,y,c){
-    this.x=x;this.y=y;this.c=c;
-    this.vx=(Math.random()-.5)*5;
-    this.vy=(Math.random()-.5)*5;
-    this.life=80;
-  }
-  update(){
-    this.x+=this.vx;
-    this.y+=this.vy;
-    this.life--;
-    ctx.fillStyle=this.c;
-    ctx.fillRect(this.x,this.y,3,3);
-  }
-}
-
-let rockets=[],sparks=[];
-
-function explode(x,y,color){
-  for(let i=0;i<50;i++)sparks.push(new Spark(x,y,color));
+function explode(x,y,count=40,color){
+ for(let i=0;i<count;i++)sparks.push(new Spark(x,y,color));
 }
 
 setInterval(()=>rockets.push(new Rocket()),1200);
 
+/* ===== MAIN LOOP ===== */
+function animate(){
+ ctx.fillStyle="rgba(0,0,0,.25)";
+ ctx.fillRect(0,0,canvas.width,canvas.height);
 
-/* COOKIE */
+ snow.forEach(s=>s.update());
+
+ for(let i=rockets.length-1;i>=0;i--)
+  if(!rockets[i].update())rockets.splice(i,1);
+
+ for(let i=sparks.length-1;i>=0;i--){
+  sparks[i].update();
+  if(sparks[i].life<=0)sparks.splice(i,1);
+ }
+
+ requestAnimationFrame(animate);
+}
+animate();
+
+/* ===== COOKIE ===== */
 let cookies=0;
 const cookie=document.getElementById("cookie");
-cookie.style.background="#c68642";
+const cookieCount=document.getElementById("cookieCount");
+const skinPicker=document.getElementById("skinPicker");
 
-function crack(){
- const c=document.createElement("div");
- c.className="crack";
- c.style.transform=`rotate(${Math.random()*360}deg)`;
- cookie.appendChild(c);
-}
+cookie.style.background="#c68642";
 
 cookie.onclick=e=>{
  e.stopPropagation();
  cookies++;
  cookieCount.textContent="Cookies: "+cookies;
  explode(canvas.width/2,canvas.height/2,40,cookie.style.background);
- if(cookies%5===0&&cookie.children.length<15)crack();
- if(cookies===50){
-  explode(canvas.width/2,canvas.height/2,300);
-  cookie.innerHTML="";cookies=0;
-  cookieCount.textContent="Cookies: 0 (New Cookie!)";
- }
 };
 
 skinPicker.onchange=e=>cookie.style.background=e.target.value;
 
-/* CLICK ANYWHERE */
+/* CLICK FIREWORK */
 document.body.addEventListener("click",e=>{
  explode(e.clientX,e.clientY,80);
 });
- /* ================= MAIN ANIMATION LOOP ================= */
-function animate(){
-  ctx.fillStyle="rgba(0,0,0,.25)";
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-
-  for(let i=rockets.length-1;i>=0;i--){
-    if(!rockets[i].update())rockets.splice(i,1);
-  }
-
-  for(let i=sparks.length-1;i>=0;i--){
-    sparks[i].update();
-    if(sparks[i].life<=0)sparks.splice(i,1);
-  }
-
-  requestAnimationFrame(animate);
-}
-animate();
- 
 </script>
 
 </body>
-</html
+</html>
