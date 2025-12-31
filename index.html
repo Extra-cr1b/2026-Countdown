@@ -126,7 +126,7 @@ const playlist=[
  {f:"LoveM.mp3",n:"Love Me"},
  {f:"Angel.mp3",n:"Angel with a shotgun"},
  {f:"ImadeIt.mp3",n:"I made it through"},
- 
+ {f:"teeth" .n:"Teeth"}
 ];
   /* FULLSCREEN */
 function toggleFullscreen(){
@@ -251,6 +251,81 @@ cookie.onclick=e=>{
 };
 
 skinPicker.onchange=e=>cookie.style.background=e.target.value;
+  /* FAYAWAKS*/
+  const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+canvas.width = innerWidth;
+canvas.height = innerHeight;
+window.onresize = () => { canvas.width = innerWidth; canvas.height = innerHeight; };
+  
+// -------- FIREWORKS MODULE --------
+class Rocket {
+  constructor() {
+    this.x = Math.random() * canvas.width;   // Random horizontal start
+    this.y = canvas.height;                  // Bottom of the screen
+    this.vy = -(Math.random() * 4 + 6);      // Random upward speed
+    this.targetY = Math.random() * canvas.height / 2; // Random explosion height
+    this.color = `hsl(${Math.random()*360}, 100%, 50%)`;
+  }
+
+  update() {
+    this.y += this.vy;
+    ctx.strokeStyle = this.color;
+    ctx.beginPath();
+    ctx.moveTo(this.x, this.y);
+    ctx.lineTo(this.x, this.y + 15);
+    ctx.stroke();
+    if (this.y <= this.targetY) {
+      explode(this.x, this.y, 40);
+      return false; // remove rocket
+    }
+    return true; // keep rocket
+  }
+}
+
+class Spark {
+  constructor(x, y, color) {
+    this.x = x;
+    this.y = y;
+    this.vx = (Math.random() - 0.5) * 5;
+    this.vy = (Math.random() - 0.5) * 5;
+    this.life = 80;
+    this.color = color || `hsl(${Math.random()*360},100%,60%)`;
+  }
+
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    this.life--;
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x, this.y, 3, 3);
+  }
+}
+
+let rockets = [];
+let sparks = [];
+
+function explode(x, y, count, color) {
+  for (let i = 0; i < count; i++) sparks.push(new Spark(x, y, color));
+}
+
+// Spawn rockets every 1.2 seconds
+setInterval(() => {
+  rockets.push(new Rocket());
+}, 1200);
+
+// Animate rockets and sparks
+function animateFireworks() {
+  ctx.fillStyle = "rgba(0,0,0,0.2)"; // fade for trails
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  rockets = rockets.filter(r => r.update());
+  sparks = sparks.filter(s => { s.update(); return s.life > 0; });
+
+  requestAnimationFrame(animateFireworks);
+}
+animateFireworks();
+
 
 /* CLICK FIREWORK */
 document.body.addEventListener("click",e=>{
@@ -260,6 +335,7 @@ document.body.addEventListener("click",e=>{
 
 </body>
 </html>
+
 
 
 
