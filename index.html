@@ -46,15 +46,27 @@ canvas{position:fixed;inset:0;z-index:0}
   z-index:3;
 }
 #cookie{
-  width:160px;
-  height:160px;
+  width:170px;
+  height:170px;
   border-radius:50%;
   cursor:pointer;
-  box-shadow:0 0 25px rgba(255,255,255,.4);
-  transition:transform .1s;
+  position:relative;
+  transition:transform .08s;
 }
 #cookie:active{transform:scale(.92)}
+
+.crack{
+  position:absolute;
+  width:3px;
+  height:60px;
+  background:rgba(0,0,0,.5);
+  top:50%;
+  left:50%;
+  transform-origin:top;
+}
+
 #cookieCount{margin-top:10px;font-family:"Comic Sans MS",cursive}
+
 #skinPicker{
   margin-top:8px;
   background:#111;color:white;
@@ -195,15 +207,23 @@ function animate(){
 }
 animate();
 
-/* COOKIE */
+/* COOKIE + CRACKS */
 let cookies=0;
 const cookie=document.getElementById("cookie");
 cookie.style.background="#c68642";
+
+function addCrack(){
+ const crack=document.createElement("div");
+ crack.className="crack";
+ crack.style.transform=`rotate(${Math.random()*360}deg)`;
+ cookie.appendChild(crack);
+}
 
 cookie.onclick=()=>{
  cookies++;
  document.getElementById("cookieCount").textContent="Cookies: "+cookies;
  explode(canvas.width/2,canvas.height/2,80);
+ if(cookie.children.length<12) addCrack();
 };
 
 document.getElementById("skinPicker").onchange=e=>{
